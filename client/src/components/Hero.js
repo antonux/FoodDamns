@@ -1,6 +1,7 @@
-import GeneratingRecipes from "./generatingRecipes"
-import GeneratingViewRecipe from "./generatingViewRecipe"
+import GeneratingRecipes from "./generatingRecipes";
+import GeneratingViewRecipe from "./generatingViewRecipe";
 import React, { useState, useEffect } from "react";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
 const RecipeCard = ({
   onSubmit,
@@ -8,10 +9,13 @@ const RecipeCard = ({
   viewRecipe,
   canView,
   fiveRecipeText,
+  cuisines,
 }) => {
-  const [isGeneratingRecipesModal, setIsGeneratingRecipesModal] = useState(false);
-  const [isGeneratingViewRecipeModal, setIsGeneratingViewRecipeModal] = useState(false);
-  const [recipeName, setRecipeName] = useState('');
+  const [isGeneratingRecipesModal, setIsGeneratingRecipesModal] =
+    useState(false);
+  const [isGeneratingViewRecipeModal, setIsGeneratingViewRecipeModal] =
+    useState(false);
+  const [recipeName, setRecipeName] = useState("");
   const [formData, setFormData] = useState({
     ingredients: "",
     mealType: "",
@@ -25,6 +29,9 @@ const RecipeCard = ({
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  const handleAutocompleteChange = (value) => {
+    setFormData({ ...formData, ["cuisine"]: value });
   };
   useEffect(() => {
     if (fiveRecipeText.length > 0) {
@@ -70,7 +77,7 @@ const RecipeCard = ({
       return;
     }
     setIsVisible(false);
-    setIsLoading(true)
+    setIsLoading(true);
     setIsGeneratingRecipesModal(true);
     onFiveSubmit(formData);
   };
@@ -101,8 +108,7 @@ const RecipeCard = ({
             {
               label: "Cuisine",
               id: "cuisine",
-              type: "text",
-              placeholder: "e.g., Italian, Mexican",
+              type: "autocomplete", // Custom type for the Autocomplete component
             },
             {
               label: "Cooking Time",
@@ -144,6 +150,25 @@ const RecipeCard = ({
                     </option>
                   ))}
                 </select>
+              ) : type === "autocomplete" ? (
+                <div className="flex w-full flex-wrap md:flex-nowrap gap-4 focus:outline-none">
+                  <Autocomplete
+                    className="max-w-full focus:outline-red-400 border border-gray-300 px-1 py-[2px] ring-0 outline-none rounded-lg"
+                    placeholder="Select a cuisine"
+                    aria-label="da"
+                    inputValue={formData[id]}
+                    onInputChange={handleAutocompleteChange} // Use the custom handler
+                  >
+                    {cuisines.map((cuisine) => (
+                      <AutocompleteItem
+                        className="bg-white outline-none px-4 focus:outline-red-400 border-none focus:ring-0"
+                        key={cuisine.key}
+                      >
+                        {cuisine.label}
+                      </AutocompleteItem>
+                    ))}
+                  </Autocomplete>
+                </div>
               ) : (
                 <input
                   id={id}
@@ -188,6 +213,7 @@ const RecipeCard = ({
         </h2>
         <div className="space-y-5">
           {Array.isArray(fiveRecipeText) &&
+          fiveRecipeText[0].recipe_name !== "Unknown" ? (
             fiveRecipeText.map((data, index) => (
               <div
                 key={index}
@@ -202,9 +228,9 @@ const RecipeCard = ({
                 <div>
                   <h1
                     className="text-xl pr-2 w-[20rem] font-semibold whitespace-nowrap text-green-600
-  overflow-hidden text-ellipsis hover:overflow-visible hover:whitespace-normal hover:bg-white hover:z-10"
+              overflow-hidden text-ellipsis hover:overflow-visible hover:whitespace-normal hover:bg-white hover:z-10"
                   >
-                    {data.recipe_name}
+                    {data.recipe_name || "No recipe name available"}
                   </h1>
                   <p className="text-gray-600 mt-1">{data.description}</p>
                 </div>
@@ -217,7 +243,16 @@ const RecipeCard = ({
                   Prep
                 </button>
               </div>
-            ))}
+            ))
+          ) : (
+            <p>
+              {Array.isArray(fiveRecipeText) &&
+              fiveRecipeText.length > 0 &&
+              fiveRecipeText[0].recipe_name === "Unknown"
+                ? "No recipes found"
+                : ""}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -230,6 +265,7 @@ const Hero = ({
   onFiveRecipeSubmit,
   viewRecipe,
   canView,
+  cuisines,
 }) => {
   return (
     <section>
@@ -243,6 +279,7 @@ const Hero = ({
             onFiveSubmit={onFiveRecipeSubmit}
             viewRecipe={viewRecipe}
             canView={canView}
+            cuisines={cuisines}
           />
         </div>
       </div>

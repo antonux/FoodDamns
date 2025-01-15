@@ -5,9 +5,17 @@ const RecipeDisplay = ({ error, recipeText, isOpen, setIsOpen }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   const formatText = (text) => {
-    return text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  };
+  // Convert bold text surrounded by '**' to <strong> tags
+  const boldText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  
+  // Convert URLs into clickable links with color and hover effect
+  const linkRegex = /(https?:\/\/[^\s]+)/g;
+  const textWithLinks = boldText.replace(linkRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #1E90FF; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${url}</a>`;
+  });
 
+  return textWithLinks;
+};
   const generatePDF = () => {
     const doc = new jsPDF();
     const recipeContent = recipeText.replace(/\*\*(.*?)\*\*/g, "$1");
